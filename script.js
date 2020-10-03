@@ -1,5 +1,9 @@
 let selectedRow = null
 let fullUsersInfo = null
+let userProps = ["name", "username", "email", "street",
+    "suite", "zipcode", "lat", "lng", "phone", "website",
+    "companyName", "companyCatchPhrase", "bs",
+];
 
 
 fetchFullUserInfo ()
@@ -58,19 +62,9 @@ function addExistedCells (data) {
 function readFormData() {
     let formData = {};
 
-    formData["name"] = document.getElementById("name").value;
-    formData["username"] = document.getElementById("username").value;
-    formData["email"] = document.getElementById("email").value;
-    formData["street"] = document.getElementById("street").value;
-    formData["suite"] = document.getElementById("suite").value;
-    formData["zipcode"] = document.getElementById("zipcode").value;
-    formData["lat"] = document.getElementById("lat").value;
-    formData["lng"] = document.getElementById("lng").value;
-    formData["phone"] = document.getElementById("phone").value;
-    formData["website"] = document.getElementById("website").value;
-    formData["companyName"] = document.getElementById("companyName").value;
-    formData["companyCatchPhrase"] = document.getElementById("companyCatchPhrase").value;
-    formData["bs"] = document.getElementById("bs").value;
+    for (let prop in userProps) {
+        formData[prop] = document.getElementById(prop).value;
+    }
 
     return formData;
 }
@@ -112,37 +106,28 @@ function insertNewRecord(data, newID) {
 
 
 function updateContent() {
-    // clean input after insert new record
-    document.getElementById("name").value = "";
-    document.getElementById("username").value = "";
-    document.getElementById("email").value = "";
-    document.getElementById("street").value = "";
-    document.getElementById("suite").value = "";
-    document.getElementById("city").value = "";
-    document.getElementById("zipcode").value = "";
-    document.getElementById("lat").value = "";
-    document.getElementById("lng").value = "";
-    document.getElementById("phone").value = "";
-    document.getElementById("website").value = "";
-    document.getElementById("companyName").value = "";
-    document.getElementById("companyCatchPhrase").value = "";
-    document.getElementById("bs").value = "";
-    selectedRow = null;
-
-    // add updated rows
-    fetchFullUserInfo()
+    // clean input
+    for (let prop in userProps) {
+        document.getElementById(prop).value = "";
+    }
 
     // delete all old rows
     for (let id in fullUsersInfo) {
         document.getElementById("employeeList").deleteRow(id);
     }
+
+    // add updated rows
+    fetchFullUserInfo()
 }
 
 
 function onEdit(td) {
     selectedRow = td.parentElement.parentElement;
     let selectedUserID = document.getElementById("employeeList").value = selectedRow.cells[0].innerHTML;
-    
+
+    for (let prop in userProps) {
+        document.getElementById(prop).value = fullUsersInfo[selectedUserID - 1].address.geo.lat;
+    }
     document.getElementById("name").value = selectedRow.cells[1].innerHTML;
     document.getElementById("username").value = selectedRow.cells[2].innerHTML;
     document.getElementById("email").value = selectedRow.cells[3].innerHTML;
