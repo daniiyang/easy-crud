@@ -2,7 +2,7 @@ const htmlUserList = document.getElementById("userList");
 
 let selectedRow = null;
 let fullUsersInfo = null;
-let selectedUserID_forUpdateNewRecordOnly = null;
+let selectedUserID_GLOBAL = null;
 let userProps = ["name", "username", "email", "street",
     "suite", "zipcode", "lat", "lng", "phone", "website",
     "companyName", "companyCatchPhrase", "bs",
@@ -63,7 +63,7 @@ function insertNewRecord(data, newID) {
     let newRow = table.insertRow(table.length);
 
     let cell1 = newRow.insertCell(0);
-    cell1.innerHTML = data.id;
+    cell1.innerHTML = newID;
 
     let cell2 = newRow.insertCell(1);
     cell2.innerHTML = data.name;
@@ -118,18 +118,18 @@ function onEdit(td) {
     document.getElementById("companyCatchPhrase").value = fullUsersInfo[selectedUserID - 1].company.catchPhrase;
     document.getElementById("bs").value = fullUsersInfo[selectedUserID - 1].company.bs;
 
-    selectedUserID_forUpdateNewRecordOnly = selectedUserID;
+    selectedUserID_GLOBAL = selectedUserID;
 
 }
 
 
 function updateRecord(formData) {
-    selectedRow.cells[0].innerHTML = formData.id;
+    selectedRow.cells[0].innerHTML = selectedUserID_GLOBAL;
     selectedRow.cells[1].innerHTML = formData.name;
     selectedRow.cells[2].innerHTML = formData.username;
     selectedRow.cells[3].innerHTML = formData.email;
 
-    patchEditedUser(selectedUserID_forUpdateNewRecordOnly);
+    patchEditedUser(selectedUserID_GLOBAL);
     updateContent();
 }
 
@@ -214,8 +214,6 @@ function postNewUser (data, newID) {
     })
         .then((response) => response.json())
         .then((json) => console.log(json))
-
-    fetchFullUserInfo()
 }
 
 
