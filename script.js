@@ -5,7 +5,8 @@ const inputs = form.querySelectorAll('input[type="text"]')
 let selectedRow = null;
 let fullUsersInfo = null;
 let selectedUserID_GLOBAL = null;
-let userProps = ["name", "username", "email", "street",
+
+const userProps = ["name", "username", "email", "street",
     "suite", "zipcode", "lat", "lng", "phone", "website",
     "companyName", "companyCatchPhrase", "bs", "city"
 ];
@@ -15,7 +16,7 @@ fetchFullUserInfo ()
 
 
 function onFormSubmit() {
-    let formData = readFormData();
+    const formData = readFormData();
 
     if (selectedRow == null)
         insertNewRecord(formData, fullUsersInfo.length + 1);
@@ -25,8 +26,9 @@ function onFormSubmit() {
 
 
 function addExistedCells (data) {
-    let table = htmlUserList.getElementsByTagName('tbody')[0];
-    let newRow = table.insertRow(table.length);
+    const table = htmlUserList.getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow(table.length);
+
     let cell1 = newRow.insertCell(0);
     cell1.innerHTML = data.id;
 
@@ -47,21 +49,18 @@ function addExistedCells (data) {
 
 
 function readFormData() {
-    let formData = {};
-    // тут тоже лучше лучше на каждую итерацию не проходится по дому и не искать каждый раз по айди элемент по всему приложению
-   /*  inputs.forEach(input => {
-        formData[input.id] = input.value
-    }) */
-    for (let prop in userProps) {
-        formData[userProps[prop]] = document.getElementById(userProps[prop]).value;
-    }
+    const formData = {};
+
+   inputs.forEach(input => {
+       formData[input.id] = input.value
+    })
+
     return formData;
 }
 
 
 function insertNewRecord(data, newID) {
-    console.log(newID)
-// Здесь можно использовать уже существующую функцию addExistingCells
+    // Нельзя юзать addExistingCells, т.к. id = newId, а data.id = undefined
     let table = htmlUserList.getElementsByTagName('tbody')[0];
     let newRow = table.insertRow(table.length);
 
@@ -83,72 +82,48 @@ function insertNewRecord(data, newID) {
                        <a onClick="onMoreInfo(this)">More Info</a>`;
 
     postNewUser(data, newID)
+    clearInputs();
 }
 
-/* Лучше назвать clear fields или clear inputs  и создание нового пользователя тоже надо поля чистить*/
-function updateContent() {
-    // clean input
+
+function clearInputs() {
     for (let prop in userProps) {
         document.getElementById(userProps[prop]).value = "";
     }
-
-    /*// delete all old rows
-    for (let id in fullUsersInfo) {
-        htmlUserList.deleteRow(id);
-    }
-
-    // add updated rows
-    fetchFullUserInfo()*/
 }
+
 
 function getPlainUserData(userData) {
-const {address, company, ...plainData} = userData;
-const {geo, ...remainingAdress} = address; 
-/* Здесь мы раскладываем наш объект, чтобы не было вложенностей */
-const plainDataWithAddressAndCompany = {
-    ...plainData,
-    ...remainingAdress,
-    ...geo,
-    companyName : company.name,
-    companyCatchPhrase: company.catchPhrase,
-    bs: company.bs
+    const {address, company, ...plainData} = userData;
+    const {geo, ...remainingAdress} = address;
+    /* Здесь мы раскладываем наш объект, чтобы не было вложенностей */
+    const plainDataWithAddressAndCompany = {
+        ...plainData,
+        ...remainingAdress,
+        ...geo,
+        companyName : company.name,
+        companyCatchPhrase: company.catchPhrase,
+        bs: company.bs
+    }
+    // Объект, в котором ключ - это значение input id, а значение - это соответствующее свойство пользователя, осталось только подставить под наши инпуты
+    return userProps.reduce((acc,prop) => {
+        acc[prop] = plainDataWithAddressAndCompany[prop]
+        return acc
+    }, {})
 }
-// Теперь у нас есть объект, в котором ключ - это значение input id, а значение - это соответствующее свойство пользователя, осталось только подставить под наши инпуты
-  return userProps.reduce((acc,prop) => {
-    acc[prop] = plainDataWithAddressAndCompany[prop]
-    return acc
-  }, {})
-  
-}
+
 
 function onEdit(td) {
     selectedRow = td.parentElement.parentElement;
-    // Здесь лучше не привязываться к конкретному расположению элемента и иметь какой-либо идентификатор по которому мы сможем найти ячейку, к примеру, класс или id, но не суть
+    // Лучше иметь какой-либо идентификатор по которому мы сможем найти ячейку, к примеру, класс или id
     let selectedUserID = htmlUserList.value = selectedRow.cells[0].innerHTML;
-    // Зачастую в реальных проектах айди это уникальное значение не связанное с порядковым номером элемента, лучше находить пользователя по конкретному айди, а не через индекс
     const selectedUser = fullUsersInfo.find(user => user.id == selectedUserID);
-    // Очень много лишних итераций по DOM, повторений в коде, лучше один раз наши инпуты найти в форме и работать с ними, а не находить каждый элемент по айди при редактировании
-    // Можно сделать, как-то так, к примеру, но для этого нам необходимо объект, у которого ключами будут выступать уникальные айди нашего инпута, а значения - это свойства выбранного пользователя соответствующее инпуту
+    // Объект, у которого ключами выступают уникальные айди нашего инпута,
+    // а значения - это свойства выбранного пользователя соответствующее инпуту
     const plainUserData = getPlainUserData(selectedUser)
     inputs.forEach(input => input.value = plainUserData[input.id])
-    
-    // document.getElementById("name").value = selectedRow.cells[1].innerHTML;
-    // document.getElementById("username").value = selectedRow.cells[2].innerHTML;
-    // document.getElementById("email").value = selectedRow.cells[3].innerHTML;
-    // document.getElementById("street").value = fullUsersInfo[selectedUserID - 1].address.street;
-    // document.getElementById("suite").value = fullUsersInfo[selectedUserID - 1].address.suite;
-    // document.getElementById("city").value = fullUsersInfo[selectedUserID - 1].address.city;
-    // document.getElementById("zipcode").value = fullUsersInfo[selectedUserID - 1].address.zipcode;
-    // document.getElementById("lat").value = fullUsersInfo[selectedUserID - 1].address.geo.lat;
-    // document.getElementById("lng").value = fullUsersInfo[selectedUserID - 1].address.geo.lng;
-    // document.getElementById("phone").value = fullUsersInfo[selectedUserID - 1].phone;
-    // document.getElementById("website").value = fullUsersInfo[selectedUserID - 1].website;
-    // document.getElementById("companyName").value = fullUsersInfo[selectedUserID - 1].company.name;
-    // document.getElementById("companyCatchPhrase").value = fullUsersInfo[selectedUserID - 1].company.catchPhrase;
-    // document.getElementById("bs").value = fullUsersInfo[selectedUserID - 1].company.bs;
 
     selectedUserID_GLOBAL = selectedUserID;
-
 }
 
 
@@ -159,7 +134,7 @@ function updateRecord(formData) {
     selectedRow.cells[3].innerHTML = formData.email;
 
     patchEditedUser(selectedUserID_GLOBAL);
-    updateContent();
+    clearInputs();
 }
 
 
@@ -177,9 +152,7 @@ function onMoreInfo(td) {
     selectedRow = td.parentElement.parentElement;
     let selectedUserID = htmlUserList.value = selectedRow.cells[0].innerHTML;
 
-    // -1 cause array starts from 1 instead 0
-    // Тут тоже по айди находить
-    let selectedUserFullInfo = fullUsersInfo[selectedUserID - 1];
+    let selectedUserFullInfo = fullUsersInfo.find(user => user.id == selectedUserID);
 
     document.getElementById("usersMoreInfo").innerHTML = `id: ${selectedUserFullInfo.id}
                                                                <br>Name: ${selectedUserFullInfo.name}
